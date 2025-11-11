@@ -1,9 +1,11 @@
 const express = require("express");
 const mongoose = require("mongoose");
+const cors = require("cors");
 require('dotenv').config();
 
 const authRoutes = require('./routes/auth');
 const User = require("./models/User");
+const GoogleUsers = require("./models/GoogleUsers");
 
 const app = express();
 
@@ -11,11 +13,12 @@ const app = express();
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cors());
 
 // Routes
 app.use('/api/auth', authRoutes);
 
-// GET route to fetch all users (for testing - remove in production)
+// GET route to fetch all users (for testing)
 app.get("/api/users", async(req, res) => {
     try {
         const users = await User.find().select('-password');
@@ -25,13 +28,25 @@ app.get("/api/users", async(req, res) => {
     }
 });
 
+// Get route to fetch all googleusers (for testing)
+app.get("/api/googleusers", async(req, res) => {
+    try {
+        const users = await GoogleUsers.find();
+        res.json(users);    
+    }catch {
+        res.status(500).json({ error: "Error fetching users" });
+    }
+})
+
 // check route
 app.get("/", (req, res) => {
     res.json({ 
         message: "Authentication API is running",
         endpoints: {
             register: "POST /api/auth/register",
-            login: "POST /api/auth/login"
+            login: "POST /api/auth/login",
+            google: "POST /api/auth/google",
+            users: "GET /api/users"
         }
     });
 });
